@@ -1,0 +1,1 @@
+package com.example.personaltaskmanager.features.analytics.data.local.dao; public interface TaskDao {}

@@ -1,0 +1,1 @@
+package com.example.personaltaskmanager.features.dashboard.data.remote.api; public interface ApiService {}

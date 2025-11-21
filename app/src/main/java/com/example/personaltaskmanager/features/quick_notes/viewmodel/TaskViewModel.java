@@ -1,0 +1,1 @@
+package com.example.personaltaskmanager.features.quick_notes.viewmodel; public class TaskViewModel {}

@@ -1,0 +1,1 @@
+package com.example.personaltaskmanager.features.calendar_events.data.model; public class Task {public int id;}

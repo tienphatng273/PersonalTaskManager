@@ -1,0 +1,1 @@
+package com.example.personaltaskmanager.features.quick_notes.data.remote.dto; public class TaskDto {}

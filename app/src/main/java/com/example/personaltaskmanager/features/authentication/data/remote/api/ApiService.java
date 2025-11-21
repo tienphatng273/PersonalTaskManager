@@ -1,0 +1,1 @@
+package com.example.personaltaskmanager.features.authentication.data.remote.api; public interface ApiService {}

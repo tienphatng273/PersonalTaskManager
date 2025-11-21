@@ -1,0 +1,1 @@
+package com.example.personaltaskmanager.features.authentication.domain.validator; public class TaskValidator {}

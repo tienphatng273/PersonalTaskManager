@@ -1,0 +1,1 @@
+package com.example.personaltaskmanager.features.calendar_events.domain.validator; public class TaskValidator {}

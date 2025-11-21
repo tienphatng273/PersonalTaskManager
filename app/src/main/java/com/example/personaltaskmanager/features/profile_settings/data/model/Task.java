@@ -1,0 +1,1 @@
+package com.example.personaltaskmanager.features.profile_settings.data.model; public class Task {public int id;}
