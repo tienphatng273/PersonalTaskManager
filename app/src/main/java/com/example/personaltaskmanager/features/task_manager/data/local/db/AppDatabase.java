@@ -11,7 +11,7 @@ import com.example.personaltaskmanager.features.task_manager.data.model.Task;
 
 @Database(
         entities = {Task.class},
-        version = 1,
+        version = 2,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {

@@ -54,4 +54,9 @@ public class TaskRepository {
     public void deleteTask(Task task) {
         executor.execute(() -> taskDao.deleteTask(task));
     }
+
+    // ⭐ UPDATE completed status
+    public void updateCompleted(Task task, boolean done) {
+        executor.execute(() -> taskDao.updateCompleted(task.id, done));
+    }
 }

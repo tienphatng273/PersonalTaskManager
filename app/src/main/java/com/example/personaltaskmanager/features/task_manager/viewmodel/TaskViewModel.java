@@ -61,4 +61,10 @@ public class TaskViewModel extends AndroidViewModel {
     public void deleteTask(Task task) {
         deleteTaskUseCase.execute(task);
     }
+
+    // UPDATE Completed
+    public void toggleCompleted(Task task, boolean done) {
+        task.setCompleted(done);
+        repository.updateCompleted(task, done);
+    }
 }

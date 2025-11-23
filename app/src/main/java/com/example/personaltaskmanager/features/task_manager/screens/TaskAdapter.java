@@ -1,5 +1,6 @@
 package com.example.personaltaskmanager.features.task_manager.screens;
 
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,33 +20,37 @@ import java.util.List;
 
 /**
  * Adapter hiển thị danh sách Task trong RecyclerView.
- * - Sử dụng ViewHolder pattern.
- * - Hỗ trợ click vào từng item để mở chi tiết.
- *
- * Note:
- *  Đây chỉ là adapter cho UI, không chứa logic load DB.
+ * Giữ nguyên cấu trúc cũ, chỉ bổ sung toggle Completed.
  */
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
     private List<Task> taskList = new ArrayList<>();
 
     private OnTaskClickListener listener;
-    private OnTaskDeleteListener deleteListener;   // <--- THÊM MỚI
+    private OnTaskDeleteListener deleteListener;
+    private OnTaskToggleListener toggleListener;   // ⭐ NEW
 
-    // CLICK ITEM
     public interface OnTaskClickListener {
         void onTaskClick(Task task);
     }
 
-    // CLICK DELETE
     public interface OnTaskDeleteListener {
         void onTaskDelete(Task task);
     }
 
-    // Constructor giữ nguyên, chỉ thêm deleteListener
-    public TaskAdapter(OnTaskClickListener listener, OnTaskDeleteListener deleteListener) {
+    // ⭐ CALLBACK khi tick checkbox
+    public interface OnTaskToggleListener {
+        void onTaskToggle(Task task, boolean done);
+    }
+
+    public TaskAdapter(
+            OnTaskClickListener listener,
+            OnTaskDeleteListener deleteListener,
+            OnTaskToggleListener toggleListener
+    ) {
         this.listener = listener;
         this.deleteListener = deleteListener;
+        this.toggleListener = toggleListener;
     }
 
     public void setData(List<Task> tasks) {
@@ -66,16 +71,34 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         Task task = taskList.get(position);
 
         holder.textTitle.setText(task.getTitle());
-        holder.textDeadline.setText(task.getDescription()); // tạm dùng desc làm deadline
+        holder.textDeadline.setText(task.getDescription());
 
-        // Click mở chi tiết
+        holder.checkboxTask.setChecked(task.isCompleted());
+
+        // ⭐ UI cho task đã completed
+        if (task.isCompleted()) {
+            holder.textTitle.setPaintFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+            holder.textTitle.setAlpha(0.5f);
+            holder.textDeadline.setAlpha(0.5f);
+        } else {
+            holder.textTitle.setPaintFlags(0);
+            holder.textTitle.setAlpha(1f);
+            holder.textDeadline.setAlpha(1f);
+        }
+
+        // CLICK ITEM
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onTaskClick(task);
         });
 
-        // Click delete
+        // DELETE
         holder.btnDelete.setOnClickListener(v -> {
             if (deleteListener != null) deleteListener.onTaskDelete(task);
+        });
+
+        // ⭐ TOGGLE COMPLETED
+        holder.checkboxTask.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (toggleListener != null) toggleListener.onTaskToggle(task, isChecked);
         });
     }
 

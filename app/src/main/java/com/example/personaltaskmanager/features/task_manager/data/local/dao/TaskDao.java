@@ -14,11 +14,9 @@ import java.util.List;
 @Dao
 public interface TaskDao {
 
-    // Lấy danh sách Task dạng LiveData để UI tự cập nhật
     @Query("SELECT * FROM tasks ORDER BY id DESC")
     LiveData<List<Task>> getAllTasks();
 
-    // LẤY 1 TASK THEO ID (PHỤC VỤ EDIT)
     @Query("SELECT * FROM tasks WHERE id = :taskId LIMIT 1")
     Task getTaskById(int taskId);
 
@@ -30,4 +28,8 @@ public interface TaskDao {
 
     @Delete
     void deleteTask(Task task);
+
+    // ⭐ UPDATE Completed state
+    @Query("UPDATE tasks SET isCompleted = :done WHERE id = :taskId")
+    void updateCompleted(int taskId, boolean done);
 }

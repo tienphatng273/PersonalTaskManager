@@ -49,7 +49,6 @@ public class TaskManagerMainActivity extends AppCompatActivity {
     }
 
     private void setupBottomNav() {
-
         navHome.setOnClickListener(v -> {
             // TODO
         });
@@ -89,8 +88,13 @@ public class TaskManagerMainActivity extends AppCompatActivity {
                     startActivity(intent);
                 },
 
-                // CLICK DELETE → dialog confirm + ViewModel
-                task -> showDeleteConfirmDialog(task)
+                // DELETE → Dialog confirm
+                task -> showDeleteConfirmDialog(task),
+
+                // ⭐ TOGGLE COMPLETED
+                (task, done) -> {
+                    taskViewModel.toggleCompleted(task, done);
+                }
         );
 
         rvTasks.setAdapter(adapter);

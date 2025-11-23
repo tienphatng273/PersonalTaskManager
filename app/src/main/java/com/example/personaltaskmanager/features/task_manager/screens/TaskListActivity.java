@@ -37,19 +37,25 @@ public class TaskListActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // ========================================================
-        //  ADAPTER (yêu cầu 2 listener → click + delete)
+        //  ADAPTER (click item + delete + toggle completed)
         // ========================================================
         adapter = new TaskAdapter(
+
+                // CLICK ITEM → mở task detail
                 task -> {
-                    // Click: mở task detail
                     Intent intent = new Intent(TaskListActivity.this, TaskDetailActivity.class);
                     intent.putExtra("task_id", task.getId());
                     startActivity(intent);
                 },
 
+                // DELETE
                 task -> {
-                    // Delete: xóa task
                     viewModel.deleteTask(task);
+                },
+
+                // ⭐ TOGGLE COMPLETED
+                (task, done) -> {
+                    viewModel.toggleCompleted(task, done);
                 }
         );
 
@@ -59,9 +65,7 @@ public class TaskListActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(TaskViewModel.class);
 
         // Observe DB → UI tự cập nhật
-        viewModel.getAllTasks().observe(this, tasks -> {
-            adapter.setData(tasks);
-        });
+        viewModel.getAllTasks().observe(this, tasks -> adapter.setData(tasks));
 
         // Nút mở màn thêm Task
         fabAdd.setOnClickListener(v -> {
