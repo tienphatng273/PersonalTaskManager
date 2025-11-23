@@ -8,11 +8,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.personaltaskmanager.R;
+import com.example.personaltaskmanager.features.task_manager.data.model.Task;
 import com.example.personaltaskmanager.features.task_manager.viewmodel.TaskViewModel;
 
 /**
  * Màn hình thêm / sửa Task.
- * Hiện tại chỉ làm chức năng thêm mới.
  * Sử dụng đúng kiến trúc MVVM → gọi ViewModel để lưu DB.
  */
 public class TaskDetailActivity extends AppCompatActivity {
@@ -20,14 +20,18 @@ public class TaskDetailActivity extends AppCompatActivity {
     private EditText edtTitle, edtDescription;
     private Button btnSave;
 
-    // DÙNG VIEWMODEL — KHÔNG DÙNG REPOSITORY TRỰC TIẾP
     private TaskViewModel viewModel;
+
+    // Dùng để biết người dùng đang EDIT hay ADD
+    private int taskId = -1;
+    private Task currentTask = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.feature_task_manager_detail);
 
+        // Ánh xạ view
         edtTitle = findViewById(R.id.edt_task_title);
         edtDescription = findViewById(R.id.edt_task_description);
         btnSave = findViewById(R.id.btn_save_task);
@@ -35,7 +39,21 @@ public class TaskDetailActivity extends AppCompatActivity {
         // KHỞI TẠO VIEWMODEL
         viewModel = new ViewModelProvider(this).get(TaskViewModel.class);
 
+        // Nhận task_id nếu mở bằng EDIT
+        taskId = getIntent().getIntExtra("task_id", -1);
+
+        // Nếu có taskId → load DB để hiển thị
+        if (taskId != -1) {
+            currentTask = viewModel.getTaskById(taskId);
+            if (currentTask != null) {
+                edtTitle.setText(currentTask.getTitle());
+                edtDescription.setText(currentTask.getDescription());
+            }
+        }
+
+        // Xử lý nút LƯU
         btnSave.setOnClickListener(v -> {
+
             String title = edtTitle.getText().toString().trim();
             String desc = edtDescription.getText().toString().trim();
 
@@ -44,7 +62,15 @@ public class TaskDetailActivity extends AppCompatActivity {
                 return;
             }
 
-            // GỌI VIEWMODEL → LiveData ở TaskListActivity sẽ tự UPDATE
+            // EDIT
+            if (currentTask != null) {
+                viewModel.updateTask(currentTask, title, desc);
+                setResult(RESULT_OK);
+                finish();
+                return;
+            }
+
+            // ADD
             viewModel.addTask(title, desc);
 
             setResult(RESULT_OK);

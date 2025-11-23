@@ -18,6 +18,10 @@ public interface TaskDao {
     @Query("SELECT * FROM tasks ORDER BY id DESC")
     LiveData<List<Task>> getAllTasks();
 
+    // LẤY 1 TASK THEO ID (PHỤC VỤ EDIT)
+    @Query("SELECT * FROM tasks WHERE id = :taskId LIMIT 1")
+    Task getTaskById(int taskId);
+
     @Insert
     long insertTask(Task task);
 

@@ -30,6 +30,16 @@ public class TaskRepository {
         return taskDao.getAllTasks();
     }
 
+    // LẤY 1 TASK THEO ID (PHỤC VỤ EDIT)
+    public Task getTaskById(int id) {
+        try {
+            return executor.submit(() -> taskDao.getTaskById(id)).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     // INSERT
     public long addTask(Task task) {
         try {
@@ -39,7 +49,6 @@ public class TaskRepository {
             return -1;
         }
     }
-
 
     // UPDATE
     public void updateTask(Task task) {

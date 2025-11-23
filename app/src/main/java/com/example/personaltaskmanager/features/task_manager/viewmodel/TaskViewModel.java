@@ -5,7 +5,6 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 
 import com.example.personaltaskmanager.features.task_manager.data.model.Task;
 import com.example.personaltaskmanager.features.task_manager.data.repository.TaskRepository;
@@ -26,7 +25,7 @@ public class TaskViewModel extends AndroidViewModel {
     private final AddTaskUseCase addTaskUseCase;
 
     // LiveData UI quan sát
-    private LiveData<List<Task>> allTasksLiveData;
+    private final LiveData<List<Task>> allTasksLiveData;
 
     public TaskViewModel(@NonNull Application application) {
         super(application);
@@ -39,11 +38,15 @@ public class TaskViewModel extends AndroidViewModel {
         allTasksLiveData = getTasksUseCase.execute();
     }
 
-    /**
-     * Getter cho Activity observe
-     */
     public LiveData<List<Task>> getAllTasks() {
         return allTasksLiveData;
+    }
+
+    /**
+     * LẤY 1 TASK (PHỤC VỤ EDIT)
+     */
+    public Task getTaskById(int id) {
+        return repository.getTaskById(id);
     }
 
     /**
@@ -52,6 +55,14 @@ public class TaskViewModel extends AndroidViewModel {
     public void addTask(String title, String description) {
         Task task = new Task(title, description, System.currentTimeMillis());
         addTaskUseCase.execute(task);
-        // KHÔNG CẦN load lại danh sách — LiveData tự update
+    }
+
+    /**
+     * CẬP NHẬT TASK (EDIT)
+     */
+    public void updateTask(Task task, String newTitle, String newDesc) {
+        task.setTitle(newTitle);
+        task.setDescription(newDesc);
+        repository.updateTask(task);
     }
 }
