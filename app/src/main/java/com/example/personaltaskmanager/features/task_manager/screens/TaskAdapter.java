@@ -15,13 +15,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.personaltaskmanager.R;
 import com.example.personaltaskmanager.features.task_manager.data.model.Task;
+import com.example.personaltaskmanager.features.task_manager.utils.DateUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapter hiển thị danh sách Task trong RecyclerView.
- * Giữ nguyên cấu trúc cũ, chỉ bổ sung toggle Completed.
+ * Adapter hiển thị danh sách Task.
+ * Giữ nguyên, chỉ bổ sung hiển thị deadline.
  */
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
@@ -29,7 +30,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     private OnTaskClickListener listener;
     private OnTaskDeleteListener deleteListener;
-    private OnTaskToggleListener toggleListener;   // ⭐ NEW
+    private OnTaskToggleListener toggleListener;
 
     public interface OnTaskClickListener {
         void onTaskClick(Task task);
@@ -39,7 +40,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         void onTaskDelete(Task task);
     }
 
-    // ⭐ CALLBACK khi tick checkbox
     public interface OnTaskToggleListener {
         void onTaskToggle(Task task, boolean done);
     }
@@ -71,39 +71,29 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Task task = taskList.get(position);
 
-        // Gán text
         holder.textTitle.setText(task.getTitle());
-        holder.textDeadline.setText(task.getDescription());
 
-        // =============================
-        // 1) NGĂN TRIGGER LISTENER LẶP LẠI
-        // → Nếu không thì checkbox nhảy loạn khi scroll
-        // =============================
+        // HIỂN THỊ DEADLINE
+        holder.textDeadline.setText(DateUtils.formatDate(task.getDeadline()));
+
+        // NGĂN LISTENER LẶP
         holder.checkboxTask.setOnCheckedChangeListener(null);
         holder.checkboxTask.setChecked(task.isCompleted());
 
-        // =============================
-        // 2) ÁP DỤNG STYLE (strike-through + alpha)
-        // =============================
+        // STYLE COMPLETED
         applyCompletedStyle(holder, task.isCompleted());
 
-        // =============================
-        // 3) CLICK ITEM → mở Task Detail
-        // =============================
+        // CLICK → DETAIL
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onTaskClick(task);
         });
 
-        // =============================
-        // 4) CLICK DELETE
-        // =============================
+        // DELETE
         holder.btnDelete.setOnClickListener(v -> {
             if (deleteListener != null) deleteListener.onTaskDelete(task);
         });
 
-        // =============================
-        // 5) CHECKBOX TOGGLE
-        // =============================
+        // TOGGLE CHECKBOX
         holder.checkboxTask.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (toggleListener != null) toggleListener.onTaskToggle(task, isChecked);
         });
@@ -114,34 +104,25 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         return taskList.size();
     }
 
-    /**
-     * Áp dụng UI cho trạng thái completed:
-     * - Gạch ngang title
-     * - Giảm độ mờ text
-     * - Đổi màu checkbox (xanh dương → xanh lá)
-     */
     private void applyCompletedStyle(TaskViewHolder holder, boolean completed) {
         if (completed) {
-            // Gạch ngang + mờ đi
             holder.textTitle.setPaintFlags(
                     holder.textTitle.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG
             );
             holder.textTitle.setAlpha(0.5f);
             holder.textDeadline.setAlpha(0.5f);
 
-            // Checkbox tint xanh lá (task đã xong)
             int doneColor = holder.itemView.getResources()
                     .getColor(R.color.task_checkbox_done_tint);
             holder.checkboxTask.setButtonTintList(ColorStateList.valueOf(doneColor));
         } else {
-            // Bỏ gạch ngang + full opacity
             holder.textTitle.setPaintFlags(
-                    holder.textTitle.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG)
+                    holder.textTitle.getPaintFlags() &
+                            (~Paint.STRIKE_THRU_TEXT_FLAG)
             );
             holder.textTitle.setAlpha(1f);
             holder.textDeadline.setAlpha(1f);
 
-            // Checkbox tint xanh dương (task chưa xong)
             int normalColor = holder.itemView.getResources()
                     .getColor(R.color.task_checkbox_tint);
             holder.checkboxTask.setButtonTintList(ColorStateList.valueOf(normalColor));

@@ -1,13 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    Màn hình thêm / chỉnh sửa công việc
-    Các trường:
-     - Tên công việc
-     - Mô tả
-     - Ngày hoàn thành
-     - Nút lưu
--->
-
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -70,13 +61,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- INPUT – Ngày -->
+    <!-- ⭐ NEW — Deadline -->
     <EditText
         android:id="@+id/edt_task_date"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:hint="Ngày hoàn thành"
+        android:drawableEnd="@drawable/feature_task_manager_ic_calendar"
         android:padding="12dp"
         android:focusable="false"
         android:background="@android:drawable/editbox_background_normal"

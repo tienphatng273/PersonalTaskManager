@@ -11,6 +11,10 @@ import com.example.personaltaskmanager.features.task_manager.data.model.Task;
 
 import java.util.List;
 
+/**
+ * DAO xử lý CRUD với Room DB.
+ * Giữ nguyên toàn bộ code cũ, chỉ bổ sung hàm getTasksByDate().
+ */
 @Dao
 public interface TaskDao {
 
@@ -29,7 +33,11 @@ public interface TaskDao {
     @Delete
     void deleteTask(Task task);
 
-    // ⭐ UPDATE Completed state
+    // UPDATE Completed
     @Query("UPDATE tasks SET isCompleted = :done WHERE id = :taskId")
     void updateCompleted(int taskId, boolean done);
+
+    // lấy task theo ngày
+    @Query("SELECT * FROM tasks WHERE deadline BETWEEN :start AND :end ORDER BY deadline ASC")
+    LiveData<List<Task>> getTasksByDate(long start, long end);
 }

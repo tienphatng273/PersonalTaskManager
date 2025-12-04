@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 
 /**
  * Repository quản lý truy cập DB.
- * Dùng Executor để tránh lỗi chạy DB trên main thread.
+ * Giữ nguyên logic cũ, chỉ thêm hàm getTasksByDate().
  */
 public class TaskRepository {
 
@@ -55,8 +55,13 @@ public class TaskRepository {
         executor.execute(() -> taskDao.deleteTask(task));
     }
 
-    // ⭐ UPDATE completed status
+    // UPDATE completed
     public void updateCompleted(Task task, boolean done) {
         executor.execute(() -> taskDao.updateCompleted(task.id, done));
+    }
+
+    // NEW — lấy task theo range ngày
+    public LiveData<List<Task>> getTasksByDate(long start, long end) {
+        return taskDao.getTasksByDate(start, end);
     }
 }

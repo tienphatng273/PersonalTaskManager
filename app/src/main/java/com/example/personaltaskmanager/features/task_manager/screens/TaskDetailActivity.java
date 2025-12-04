@@ -1,5 +1,6 @@
 package com.example.personaltaskmanager.features.task_manager.screens;
 
+import android.app.DatePickerDialog;
 import android.os.Build;
 import android.os.Bundle;
 import android.graphics.Color;
@@ -15,23 +16,28 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.personaltaskmanager.R;
 import com.example.personaltaskmanager.features.task_manager.data.model.Task;
+import com.example.personaltaskmanager.features.task_manager.utils.DateUtils;
 import com.example.personaltaskmanager.features.task_manager.viewmodel.TaskViewModel;
+
+import java.util.Calendar;
 
 /**
  * Màn hình thêm / sửa Task.
- * Sử dụng đúng kiến trúc MVVM → gọi ViewModel để lưu DB.
+ * Giữ nguyên code cũ, chỉ bổ sung deadline + DatePicker.
  */
 public class TaskDetailActivity extends AppCompatActivity {
 
-    private EditText edtTitle, edtDescription;
+    private EditText edtTitle, edtDescription, edtDate;
     private Button btnSave;
-    private ImageButton btnBack;   // Bổ sung
+    private ImageButton btnBack;
 
     private TaskViewModel viewModel;
 
-    // Dùng để biết người dùng đang EDIT hay ADD
     private int taskId = -1;
     private Task currentTask = null;
+
+    // Deadline timestamp
+    private long selectedDeadline = System.currentTimeMillis();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,13 +49,13 @@ public class TaskDetailActivity extends AppCompatActivity {
         // Ánh xạ view
         edtTitle = findViewById(R.id.edt_task_title);
         edtDescription = findViewById(R.id.edt_task_description);
+        edtDate = findViewById(R.id.edt_task_date);
         btnSave = findViewById(R.id.btn_save_task);
         btnBack = findViewById(R.id.btn_back);
 
-        // KHỞI TẠO VIEWMODEL
         viewModel = new ViewModelProvider(this).get(TaskViewModel.class);
 
-        // Nhận task_id nếu đang EDIT
+        // EDIT MODE
         taskId = getIntent().getIntExtra("task_id", -1);
 
         if (taskId != -1) {
@@ -57,37 +63,63 @@ public class TaskDetailActivity extends AppCompatActivity {
             if (currentTask != null) {
                 edtTitle.setText(currentTask.getTitle());
                 edtDescription.setText(currentTask.getDescription());
+
+                selectedDeadline = currentTask.getDeadline();
+                edtDate.setText(DateUtils.formatDate(selectedDeadline));
+
                 btnSave.setText("Cập nhật công việc");
             }
         }
 
-        // Xử lý nút BACK
+        // BACK
         btnBack.setOnClickListener(v -> finish());
 
-        // Nút LƯU
-        btnSave.setOnClickListener(v -> {
+        // ⭐ NEW: DatePicker
+        edtDate.setOnClickListener(v -> openDatePicker());
 
-            String title = edtTitle.getText().toString().trim();
-            String desc = edtDescription.getText().toString().trim();
+        // SAVE
+        btnSave.setOnClickListener(v -> saveTask());
+    }
 
-            if (title.isEmpty()) {
-                edtTitle.setError("Tên công việc không được để trống");
-                return;
-            }
+    private void openDatePicker() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(selectedDeadline);
 
-            // EDIT
-            if (currentTask != null) {
-                viewModel.updateTask(currentTask, title, desc);
-                setResult(RESULT_OK);
-                finish();
-                return;
-            }
+        new DatePickerDialog(
+                this,
+                (view, year, month, day) -> {
+                    Calendar c = Calendar.getInstance();
+                    c.set(year, month, day, 0, 0, 0);
+                    selectedDeadline = c.getTimeInMillis();
+                    edtDate.setText(DateUtils.formatDate(selectedDeadline));
+                },
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH),
+                cal.get(Calendar.DAY_OF_MONTH)
+        ).show();
+    }
 
-            // ADD
-            viewModel.addTask(title, desc);
+    private void saveTask() {
+        String title = edtTitle.getText().toString().trim();
+        String desc = edtDescription.getText().toString().trim();
+
+        if (title.isEmpty()) {
+            edtTitle.setError("Tên công việc không được để trống");
+            return;
+        }
+
+        // UPDATE
+        if (currentTask != null) {
+            viewModel.updateTask(currentTask, title, desc, selectedDeadline);
             setResult(RESULT_OK);
             finish();
-        });
+            return;
+        }
+
+        // ADD
+        viewModel.addTask(title, desc, selectedDeadline);
+        setResult(RESULT_OK);
+        finish();
     }
 
     private void setLightStatusBar() {

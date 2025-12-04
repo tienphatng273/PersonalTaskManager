@@ -9,15 +9,15 @@ import androidx.lifecycle.LiveData;
 import com.example.personaltaskmanager.features.task_manager.data.model.Task;
 import com.example.personaltaskmanager.features.task_manager.data.repository.TaskRepository;
 import com.example.personaltaskmanager.features.task_manager.domain.usecase.AddTaskUseCase;
-import com.example.personaltaskmanager.features.task_manager.domain.usecase.GetTasksUseCase;
 import com.example.personaltaskmanager.features.task_manager.domain.usecase.DeleteTaskUseCase;
+import com.example.personaltaskmanager.features.task_manager.domain.usecase.GetTasksUseCase;
+import com.example.personaltaskmanager.features.task_manager.domain.usecase.GetTasksByDateUseCase;
 
 import java.util.List;
 
 /**
  * TaskViewModel quản lý dữ liệu Task theo mô hình MVVM.
- * - Lấy dữ liệu từ DB qua Repository + UseCase
- * - Expose LiveData để Activity observe (UI tự cập nhật)
+ * Giữ nguyên code cũ, chỉ bổ sung logic deadline + getTasksByDate().
  */
 public class TaskViewModel extends AndroidViewModel {
 
@@ -25,6 +25,9 @@ public class TaskViewModel extends AndroidViewModel {
     private final GetTasksUseCase getTasksUseCase;
     private final AddTaskUseCase addTaskUseCase;
     private final DeleteTaskUseCase deleteTaskUseCase;
+
+
+    private final GetTasksByDateUseCase getTasksByDateUseCase;
 
     private final LiveData<List<Task>> allTasksLiveData;
 
@@ -35,6 +38,8 @@ public class TaskViewModel extends AndroidViewModel {
         getTasksUseCase = new GetTasksUseCase(repository);
         addTaskUseCase = new AddTaskUseCase(repository);
         deleteTaskUseCase = new DeleteTaskUseCase(repository);
+
+        getTasksByDateUseCase = new GetTasksByDateUseCase(repository);
 
         allTasksLiveData = getTasksUseCase.execute();
     }
@@ -47,14 +52,17 @@ public class TaskViewModel extends AndroidViewModel {
         return repository.getTaskById(id);
     }
 
-    public void addTask(String title, String description) {
-        Task task = new Task(title, description, System.currentTimeMillis());
+    // ADD Task + deadline
+    public void addTask(String title, String description, long deadline) {
+        Task task = new Task(title, description, System.currentTimeMillis(), deadline);
         addTaskUseCase.execute(task);
     }
 
-    public void updateTask(Task task, String newTitle, String newDesc) {
+    // UPDATE Task + deadline
+    public void updateTask(Task task, String newTitle, String newDesc, long deadline) {
         task.setTitle(newTitle);
         task.setDescription(newDesc);
+        task.setDeadline(deadline);
         repository.updateTask(task);
     }
 
@@ -62,9 +70,14 @@ public class TaskViewModel extends AndroidViewModel {
         deleteTaskUseCase.execute(task);
     }
 
-    // UPDATE Completed
+    // Toggle completed
     public void toggleCompleted(Task task, boolean done) {
         task.setCompleted(done);
         repository.updateCompleted(task, done);
+    }
+
+    // NEW — Lấy task theo ngày
+    public LiveData<List<Task>> getTasksByDate(long start, long end) {
+        return getTasksByDateUseCase.execute(start, end);
     }
 }

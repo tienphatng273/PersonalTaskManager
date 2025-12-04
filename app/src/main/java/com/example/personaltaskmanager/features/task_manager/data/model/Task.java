@@ -4,6 +4,18 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.Ignore;
 
+/**
+ * Entity Task lưu trong Room Database.
+ * Các trường:
+ *  - id (int)
+ *  - title (String)
+ *  - description (String)
+ *  - createdAt (long)
+ *  - isCompleted (boolean)
+ *  - deadline (long)
+ *
+ * Giữ nguyên cấu trúc cũ, chỉ bổ sung trường deadline.
+ */
 @Entity(tableName = "tasks")
 public class Task {
 
@@ -17,11 +29,15 @@ public class Task {
     // Trạng thái hoàn thành
     public boolean isCompleted = false;
 
+    // Deadline dạng timestamp (millis)
+    public long deadline = 0L;
+
     // ==== CONSTRUCTOR CHÍNH CHO ROOM ====
-    public Task(String title, String description, long createdAt) {
+    public Task(String title, String description, long createdAt, long deadline) {
         this.title = title;
         this.description = description;
         this.createdAt = createdAt;
+        this.deadline = deadline;
         this.isCompleted = false;
     }
 
@@ -32,6 +48,7 @@ public class Task {
         this.title = title;
         this.description = description;
         this.createdAt = System.currentTimeMillis();
+        this.deadline = System.currentTimeMillis(); // mặc định deadline = hôm nay
         this.isCompleted = false;
     }
 
@@ -56,6 +73,10 @@ public class Task {
         return isCompleted;
     }
 
+    public long getDeadline() {
+        return deadline;
+    }
+
     // ==== SETTER ====
     public void setTitle(String title) {
         this.title = title;
@@ -67,5 +88,9 @@ public class Task {
 
     public void setCompleted(boolean completed) {
         this.isCompleted = completed;
+    }
+
+    public void setDeadline(long deadline) {
+        this.deadline = deadline;
     }
 }
