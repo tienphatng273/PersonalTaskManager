@@ -14,31 +14,24 @@ import com.example.personaltaskmanager.features.task_manager.screens.TaskListFra
 
 class NavigationActivity : AppCompatActivity() {
 
-    // Không cần biến này nữa vì trạng thái sẽ được quản lý bằng Compose State
-    // private var currentItem: NavItem = NavItem.TASKS
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.navigation_activity)
 
         val composeNav = findViewById<ComposeView>(R.id.bottom_nav_compose)
 
-        // ⭐ SỬA LỖI CHÍNH: Khai báo trạng thái Compose State bên trong setContent
         composeNav.setContent {
-            // Sử dụng remember và mutableStateOf để tạo trạng thái có thể quan sát
-            // Khởi tạo trạng thái ban đầu là TASKS
             var currentItemState by remember { mutableStateOf(NavItem.TASKS) }
 
             BottomNavBar(
-                current = currentItemState, // Truyền biến trạng thái Compose
+                current = currentItemState,
                 onSelect = { selected ->
-                    currentItemState = selected // CẬP NHẬT: Thay đổi State, kích hoạt re-compose
+                    currentItemState = selected
                     navigateTo(selected)
                 }
             )
         }
 
-        // Chuyển màn hình Fragment ban đầu (Task)
         navigateTo(NavItem.TASKS)
     }
 
@@ -46,6 +39,7 @@ class NavigationActivity : AppCompatActivity() {
         val fragment: Fragment = when (item) {
             NavItem.TASKS -> TaskListFragment()
             NavItem.CALENDAR -> CalendarFragment()
+            NavItem.HABIT -> HabitFragment()
             NavItem.SETTINGS -> SettingsFragment()
         }
 
