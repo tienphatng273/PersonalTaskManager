@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.provider.OpenableColumns;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -67,7 +69,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-
         rvWorkspace = findViewById(R.id.rv_workspace);
 
         btnAddParagraph = findViewById(R.id.btn_add_paragraph);
@@ -81,7 +82,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         tvTaskTitle = findViewById(R.id.tv_task_title);
         tvTaskDeadline = findViewById(R.id.tv_task_deadline);
 
-        // *** THÊM LẠI: Click để mở TaskDetailActivity ***
         View topBar = findViewById(R.id.card_top_bar);
         topBar.setOnClickListener(v -> openTaskDetail());
     }
@@ -90,22 +90,24 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         rvWorkspace.setLayoutManager(new LinearLayoutManager(this));
         adapter = new NotionBlockAdapter(blocks);
 
-        // *** GIỮ LẠI LOGIC DẤU … ***
         adapter.setFileMenuListener((block, position, anchor) -> {
             showBottomSheet(block, position);
         });
 
         rvWorkspace.setAdapter(adapter);
+
+        // ⭐ DRAG & DROP + HAPTIC + SCALE + SHADOW
+        Vibrator vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        ItemTouchHelper dragHelper =
+                new ItemTouchHelper(new BlockDragCallback(blocks, adapter, vib));
+        dragHelper.attachToRecyclerView(rvWorkspace);
     }
 
     private void applyTaskInfo() {
-
         if (task != null) {
-
             tvTaskTitle.setText(task.getTitle());
 
             long dl = task.getDeadline();
-
             if (dl > 0) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                 tvTaskDeadline.setText(sdf.format(dl));
@@ -122,7 +124,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
     }
 
     private void setupActions() {
-
         btnBack.setOnClickListener(v -> {
             save();
             finish();
@@ -137,7 +138,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
     }
 
     private void addBlock(NotionBlock.Type type) {
-
         blocks.add(new NotionBlock(
                 UUID.randomUUID().toString(),
                 type,
@@ -149,7 +149,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         rvWorkspace.scrollToPosition(blocks.size() - 1);
     }
 
-    // ================= FILE PICKER =================
     private void pickFile() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType("*/*");
@@ -161,7 +160,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         super.onActivityResult(req, res, data);
 
         if (req == REQ_PICK_FILE && res == RESULT_OK && data != null) {
-
             Uri uri = data.getData();
 
             NotionBlock block = new NotionBlock(
@@ -179,12 +177,9 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
             rvWorkspace.scrollToPosition(blocks.size() - 1);
         }
 
-        // *** THÊM LẠI: Chỉnh sửa task xong cập nhật UI ***
         if (req == REQ_EDIT_TASK && res == RESULT_OK) {
-
             task = vm.getTaskById(task.getId());
             applyTaskInfo();
-
             showIOSPopup("Đã cập nhật công việc");
         }
     }
@@ -201,9 +196,7 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         return name;
     }
 
-    // ================= BOTTOM SHEET MENU (DẤU …) =================
     private void showBottomSheet(NotionBlock block, int position) {
-
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(
                 R.layout.feature_task_manager_file_actions, null
@@ -243,9 +236,7 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    // =================== SAVE ===================
     private void save() {
-
         String json = NotionBlockParser.toJson(blocks);
         task.setNotesJson(json);
 
@@ -257,14 +248,12 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         );
     }
 
-    // ================= MỞ MÀN HÌNH SỬA TASK =================
     private void openTaskDetail() {
         Intent i = new Intent(this, TaskDetailActivity.class);
         i.putExtra("task_id", task.getId());
         startActivityForResult(i, REQ_EDIT_TASK);
     }
 
-    // ================= POPUP iOS =================
     private void showIOSPopup(String message) {
 
         TextView popup = new TextView(this);

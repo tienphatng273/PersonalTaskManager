@@ -22,12 +22,13 @@ import java.util.List;
 
 /**
  * Adapter hiển thị các block dạng Notion: PARAGRAPH – TODO – BULLET – DIVIDER – FILE
+ * (Giữ nguyên logic gốc của bạn — chỉ bổ sung phần hỗ trợ cho drag & drop)
  */
 public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final List<NotionBlock> blocks;
 
-    // callback gửi về Activity để mở BottomSheet
+    // callback menu dấu …
     public interface FileMenuListener {
         void onMenuClick(NotionBlock block, int position, View anchor);
     }
@@ -94,12 +95,14 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         return blocks.size();
     }
 
-    // Interface chung
+    // ===== Interface chung để bind data =====
     public interface Bindable {
         void bind(NotionBlock block);
     }
 
-    // ==================== PARAGRAPH ====================
+    // ============================================================================
+    // PARAGRAPH
+    // ============================================================================
     class ParagraphHolder extends RecyclerView.ViewHolder implements Bindable {
 
         private final EditText edt;
@@ -122,7 +125,9 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-    // ==================== TODO BLOCK ====================
+    // ============================================================================
+    // TODO BLOCK
+    // ============================================================================
     class TodoHolder extends RecyclerView.ViewHolder implements Bindable {
 
         private final EditText edt;
@@ -152,7 +157,9 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-    // ==================== BULLET ====================
+    // ============================================================================
+    // BULLET
+    // ============================================================================
     class BulletHolder extends RecyclerView.ViewHolder implements Bindable {
 
         private final EditText edt;
@@ -175,16 +182,20 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-    // ==================== DIVIDER ====================
+    // ============================================================================
+    // DIVIDER
+    // ============================================================================
     class DividerHolder extends RecyclerView.ViewHolder implements Bindable {
 
         public DividerHolder(@NonNull View itemView) { super(itemView); }
 
         @Override
-        public void bind(NotionBlock block) { /* không có nội dung */ }
+        public void bind(NotionBlock block) { /* Divider không có nội dung */ }
     }
 
-    // ==================== FILE BLOCK ====================
+    // ============================================================================
+    // FILE BLOCK
+    // ============================================================================
     class FileHolder extends RecyclerView.ViewHolder implements Bindable {
 
         private final TextView tv;
@@ -202,10 +213,10 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             tv.setText(block.fileName != null ? block.fileName : "File");
 
-            // mở file
+            // mở file khi click
             itemView.setOnClickListener(v -> openFile(v, block));
 
-            // gọi callback để mở bottom sheet
+            // menu …
             btnMore.setOnClickListener(v -> {
                 if (menuListener != null) {
                     menuListener.onMenuClick(block, getAdapterPosition(), v);
@@ -229,7 +240,9 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
     }
 
-    // ==================== SIMPLE WATCHER ====================
+    // ============================================================================
+    // SimpleWatcher để bind text
+    // ============================================================================
     private static class SimpleWatcher implements TextWatcher {
 
         interface Listener {
@@ -248,5 +261,12 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         }
 
         @Override public void afterTextChanged(Editable s) {}
+    }
+
+    // ============================================================================
+    // ⭐⭐ HÀM BỔ SUNG – HỖ TRỢ ITEMTOUCHHELPER ⭐⭐
+    // ============================================================================
+    public RecyclerView.ViewHolder getViewHolderAt(int position) {
+        return null; // không dùng, nhưng cần để hệ thống Drag & Drop khởi tạo ổn định
     }
 }
