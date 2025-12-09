@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,9 +20,23 @@ import com.example.personaltaskmanager.features.task_manager.screens.workspace.b
 
 import java.util.List;
 
+/**
+ * Adapter hiển thị các block dạng Notion: PARAGRAPH – TODO – BULLET – DIVIDER – FILE
+ */
 public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private final List<NotionBlock> blocks;
+
+    // callback gửi về Activity để mở BottomSheet
+    public interface FileMenuListener {
+        void onMenuClick(NotionBlock block, int position, View anchor);
+    }
+
+    private FileMenuListener menuListener;
+
+    public void setFileMenuListener(FileMenuListener listener) {
+        this.menuListener = listener;
+    }
 
     public NotionBlockAdapter(List<NotionBlock> blocks) {
         this.blocks = blocks;
@@ -34,7 +49,8 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
     @Override
     @NonNull
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(
+            @NonNull ViewGroup parent, int viewType) {
 
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         NotionBlock.Type type = NotionBlock.Type.values()[viewType];
@@ -65,7 +81,9 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(
+            @NonNull RecyclerView.ViewHolder holder, int position) {
+
         if (holder instanceof Bindable) {
             ((Bindable) holder).bind(blocks.get(position));
         }
@@ -76,11 +94,12 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         return blocks.size();
     }
 
+    // Interface chung
     public interface Bindable {
         void bind(NotionBlock block);
     }
 
-    // ---------------- PARAGRAPH ----------------
+    // ==================== PARAGRAPH ====================
     class ParagraphHolder extends RecyclerView.ViewHolder implements Bindable {
 
         private final EditText edt;
@@ -93,14 +112,17 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         @Override
         public void bind(NotionBlock block) {
+
             if (watcher != null) edt.removeTextChangedListener(watcher);
+
             edt.setText(block.text);
             watcher = new SimpleWatcher(text -> block.text = text);
+
             edt.addTextChangedListener(watcher);
         }
     }
 
-    // ---------------- TODO ----------------
+    // ==================== TODO BLOCK ====================
     class TodoHolder extends RecyclerView.ViewHolder implements Bindable {
 
         private final EditText edt;
@@ -109,12 +131,14 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         public TodoHolder(@NonNull View itemView) {
             super(itemView);
+
             edt = itemView.findViewById(R.id.edt_todo);
             checkbox = itemView.findViewById(R.id.check_todo);
         }
 
         @Override
         public void bind(NotionBlock block) {
+
             if (watcher != null) edt.removeTextChangedListener(watcher);
 
             edt.setText(block.text);
@@ -122,11 +146,13 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             watcher = new SimpleWatcher(text -> block.text = text);
             edt.addTextChangedListener(watcher);
-            checkbox.setOnCheckedChangeListener((btn, checked) -> block.isChecked = checked);
+
+            checkbox.setOnCheckedChangeListener(
+                    (view, checked) -> block.isChecked = checked);
         }
     }
 
-    // ---------------- BULLET ----------------
+    // ==================== BULLET ====================
     class BulletHolder extends RecyclerView.ViewHolder implements Bindable {
 
         private final EditText edt;
@@ -139,31 +165,36 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         @Override
         public void bind(NotionBlock block) {
+
             if (watcher != null) edt.removeTextChangedListener(watcher);
 
             edt.setText(block.text);
+
             watcher = new SimpleWatcher(text -> block.text = text);
             edt.addTextChangedListener(watcher);
         }
     }
 
-    // ---------------- DIVIDER ----------------
+    // ==================== DIVIDER ====================
     class DividerHolder extends RecyclerView.ViewHolder implements Bindable {
-        public DividerHolder(@NonNull View itemView) {
-            super(itemView);
-        }
+
+        public DividerHolder(@NonNull View itemView) { super(itemView); }
+
         @Override
-        public void bind(NotionBlock block) {}
+        public void bind(NotionBlock block) { /* không có nội dung */ }
     }
 
-    // ---------------- FILE ----------------
+    // ==================== FILE BLOCK ====================
     class FileHolder extends RecyclerView.ViewHolder implements Bindable {
 
         private final TextView tv;
+        private final TextView btnMore;
 
         public FileHolder(@NonNull View itemView) {
             super(itemView);
+
             tv = itemView.findViewById(R.id.tv_file_name);
+            btnMore = itemView.findViewById(R.id.btn_more);
         }
 
         @Override
@@ -171,23 +202,34 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
             tv.setText(block.fileName != null ? block.fileName : "File");
 
-            itemView.setOnClickListener(v -> {
-                if (block.fileUri == null) return;
+            // mở file
+            itemView.setOnClickListener(v -> openFile(v, block));
 
-                Intent openIntent = new Intent(Intent.ACTION_VIEW);
-                openIntent.setDataAndType(Uri.parse(block.fileUri), "*/*");
-                openIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                try {
-                    v.getContext().startActivity(openIntent);
-                } catch (Exception e) {
-                    e.printStackTrace();
+            // gọi callback để mở bottom sheet
+            btnMore.setOnClickListener(v -> {
+                if (menuListener != null) {
+                    menuListener.onMenuClick(block, getAdapterPosition(), v);
                 }
             });
         }
+
+        private void openFile(View v, NotionBlock block) {
+
+            if (block.fileUri == null) return;
+
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setDataAndType(Uri.parse(block.fileUri), "*/*");
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            try {
+                v.getContext().startActivity(i);
+            } catch (Exception e) {
+                Toast.makeText(v.getContext(), "Cannot open file", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
-    // ------------------------------------------------------------------
+    // ==================== SIMPLE WATCHER ====================
     private static class SimpleWatcher implements TextWatcher {
 
         interface Listener {
@@ -199,9 +241,12 @@ public class NotionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
         SimpleWatcher(Listener l) { this.listener = l; }
 
         @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-        @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
             listener.onTextChanged(s.toString());
         }
+
         @Override public void afterTextChanged(Editable s) {}
     }
 }

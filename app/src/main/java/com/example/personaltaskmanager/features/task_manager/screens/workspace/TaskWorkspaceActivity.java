@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.view.View;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -18,6 +20,7 @@ import com.example.personaltaskmanager.features.task_manager.data.model.Task;
 import com.example.personaltaskmanager.features.task_manager.screens.workspace.blocks.NotionBlock;
 import com.example.personaltaskmanager.features.task_manager.screens.workspace.blocks.NotionBlockParser;
 import com.example.personaltaskmanager.features.task_manager.viewmodel.TaskViewModel;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
 
 import java.text.SimpleDateFormat;
@@ -77,6 +80,11 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
     private void initRecycler() {
         rvWorkspace.setLayoutManager(new LinearLayoutManager(this));
         adapter = new NotionBlockAdapter(blocks);
+
+        adapter.setFileMenuListener((block, position, anchor) -> {
+            showBottomSheet(block, position);
+        });
+
         rvWorkspace.setAdapter(adapter);
     }
 
@@ -131,6 +139,7 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         rvWorkspace.scrollToPosition(blocks.size() - 1);
     }
 
+    // ================= FILE PICKER =================
     private void pickFile() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.setType("*/*");
@@ -153,7 +162,7 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
             );
 
             block.fileUri = uri.toString();
-            block.fileName = getFileName(uri); // Lấy đúng tên file
+            block.fileName = getFileName(uri);
 
             blocks.add(block);
             adapter.notifyItemInserted(blocks.size() - 1);
@@ -161,7 +170,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         }
     }
 
-    // LẤY TÊN FILE CHÍNH XÁC QUA SAF
     private String getFileName(Uri uri) {
         String name = "";
         Cursor cursor = getContentResolver().query(uri, null, null, null, null);
@@ -174,6 +182,49 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         return name;
     }
 
+    // ================= BOTTOM SHEET MENU =================
+    private void showBottomSheet(NotionBlock block, int position) {
+
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View view = getLayoutInflater().inflate(
+                R.layout.feature_task_manager_file_actions, null
+        );
+
+        dialog.setContentView(view);
+
+        TextView btnView = view.findViewById(R.id.btn_action_view);
+        TextView btnCopy = view.findViewById(R.id.btn_action_copy);
+        TextView btnDel = view.findViewById(R.id.btn_action_delete);
+
+        btnView.setOnClickListener(v -> {
+            dialog.dismiss();
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setDataAndType(Uri.parse(block.fileUri), "*/*");
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(i);
+        });
+
+        btnCopy.setOnClickListener(v -> {
+            dialog.dismiss();
+            android.content.ClipboardManager cm =
+                    (android.content.ClipboardManager)
+                            getSystemService(CLIPBOARD_SERVICE);
+
+            cm.setPrimaryClip(
+                    android.content.ClipData.newPlainText("file", block.fileUri)
+            );
+        });
+
+        btnDel.setOnClickListener(v -> {
+            dialog.dismiss();
+            blocks.remove(position);
+            adapter.notifyItemRemoved(position);
+        });
+
+        dialog.show();
+    }
+
+    // ================= SAVE =================
     private void save() {
 
         String json = NotionBlockParser.toJson(blocks);
