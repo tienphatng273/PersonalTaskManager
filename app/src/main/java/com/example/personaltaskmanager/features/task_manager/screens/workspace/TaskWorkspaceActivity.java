@@ -66,7 +66,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         btnAddTodo = findViewById(R.id.btn_add_todo);
         btnAddBullet = findViewById(R.id.btn_add_bullet);
         btnAddDivider = findViewById(R.id.btn_add_divider);
-
         btnAddFile = findViewById(R.id.btn_add_file);
 
         btnBack = findViewById(R.id.btn_back_ws);
@@ -154,7 +153,7 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
             );
 
             block.fileUri = uri.toString();
-            block.fileName = getFileName(uri); // đúng tên file
+            block.fileName = getFileName(uri); // Lấy đúng tên file
 
             blocks.add(block);
             adapter.notifyItemInserted(blocks.size() - 1);
@@ -162,7 +161,7 @@ public class TaskWorkspaceActivity extends AppCompatActivity {
         }
     }
 
-    // LẤY TÊN FILE ĐÚNG
+    // LẤY TÊN FILE CHÍNH XÁC QUA SAF
     private String getFileName(Uri uri) {
         String name = "";
         Cursor cursor = getContentResolver().query(uri, null, null, null, null);
