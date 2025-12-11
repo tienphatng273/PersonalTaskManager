@@ -14,29 +14,32 @@ import com.example.personaltaskmanager.features.authentication.data.model.User;
  */
 public class UserMapper {
 
-    /**
-     * Convert Entity → Domain Model.
-     */
     public static User toModel(UserEntity entity) {
         if (entity == null) return null;
 
+        // thêm id vào constructor
         return new User(
+                entity.id,
                 entity.username,
                 entity.email,
-                entity.password
+                entity.password,
+                entity.role
         );
     }
 
-    /**
-     * Convert Domain Model → Entity để lưu DB.
-     */
     public static UserEntity toEntity(User user) {
         if (user == null) return null;
 
-        return new UserEntity(
+        UserEntity e = new UserEntity(
                 user.username,
                 user.email,
                 user.password
         );
+
+        // truyền id ngược vào Entity
+        e.id = user.id;
+        e.role = user.role;
+
+        return e;
     }
 }

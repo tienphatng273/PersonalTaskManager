@@ -10,13 +10,30 @@ package com.example.personaltaskmanager.features.authentication.data.model;
  */
 public class User {
 
+    // thêm userId nhưng không chỉnh comment cũ
+    public int id;
+
     public String username;
     public String email;
     public String password;
 
-    public User(String username, String email, String password) {
+    // thêm role — KHÔNG sửa comment cũ
+    public String role;
+
+    public User(int id, String username, String email, String password, String role) {
+        this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
+        this.role = role;
+    }
+
+    public User(String username, String email, String password, String role) {
+        this(0, username, email, password, role);
+    }
+
+    // giữ nguyên constructor cũ để không lỗi code
+    public User(String username, String email, String password) {
+        this(0, username, email, password, "user");
     }
 }

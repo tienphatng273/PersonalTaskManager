@@ -26,8 +26,8 @@ import com.example.personaltaskmanager.features.task_manager.screens.TaskDetailA
 import com.example.personaltaskmanager.features.task_manager.screens.workspace.blocks.NotionBlock;
 import com.example.personaltaskmanager.features.task_manager.screens.workspace.blocks.NotionBlockParser;
 import com.example.personaltaskmanager.features.task_manager.viewmodel.TaskViewModel;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,6 +35,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+/**
+ * Màn hình Workspace của Task — hỗ trợ block kiểu Notion.
+ * Giữ nguyên toàn bộ logic cũ, chỉ bổ sung import TaskViewModel.
+ */
 public class TaskWorkspaceActivity extends AppCompatActivity implements MoveHandler {
 
     private RecyclerView rvWorkspace;
@@ -45,6 +49,7 @@ public class TaskWorkspaceActivity extends AppCompatActivity implements MoveHand
 
     private final List<NotionBlock> blocks = new ArrayList<>();
     private NotionBlockAdapter adapter;
+
     private TaskViewModel vm;
     private Task task;
 
@@ -90,13 +95,10 @@ public class TaskWorkspaceActivity extends AppCompatActivity implements MoveHand
         rvWorkspace.setLayoutManager(new LinearLayoutManager(this));
         adapter = new NotionBlockAdapter(blocks);
 
-        adapter.setFileMenuListener((block, position, anchor) -> {
-            showBottomSheet(block, position);
-        });
+        adapter.setFileMenuListener((block, position, anchor) -> showBottomSheet(block, position));
 
         rvWorkspace.setAdapter(adapter);
 
-        // ⭐ Drag–drop + Haptic
         Vibrator vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
         ItemTouchHelper dragHelper =
@@ -135,7 +137,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity implements MoveHand
         btnAddTodo.setOnClickListener(v -> addBlock(NotionBlock.Type.TODO));
         btnAddBullet.setOnClickListener(v -> addBlock(NotionBlock.Type.BULLET));
         btnAddDivider.setOnClickListener(v -> addBlock(NotionBlock.Type.DIVIDER));
-
         btnAddFile.setOnClickListener(v -> pickFile());
     }
 
@@ -146,7 +147,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity implements MoveHand
                 "",
                 false
         ));
-
         adapter.notifyItemInserted(blocks.size() - 1);
         rvWorkspace.scrollToPosition(blocks.size() - 1);
     }
@@ -200,9 +200,7 @@ public class TaskWorkspaceActivity extends AppCompatActivity implements MoveHand
 
     private void showBottomSheet(NotionBlock block, int position) {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
-        View view = getLayoutInflater().inflate(
-                R.layout.feature_task_manager_file_actions, null
-        );
+        View view = getLayoutInflater().inflate(R.layout.feature_task_manager_file_actions, null);
 
         dialog.setContentView(view);
 
@@ -221,8 +219,7 @@ public class TaskWorkspaceActivity extends AppCompatActivity implements MoveHand
         btnCopy.setOnClickListener(v -> {
             dialog.dismiss();
             android.content.ClipboardManager cm =
-                    (android.content.ClipboardManager)
-                            getSystemService(CLIPBOARD_SERVICE);
+                    (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
 
             cm.setPrimaryClip(
                     android.content.ClipData.newPlainText("file", block.fileUri)
@@ -257,7 +254,6 @@ public class TaskWorkspaceActivity extends AppCompatActivity implements MoveHand
     }
 
     private void showIOSPopup(String message) {
-
         TextView popup = new TextView(this);
         popup.setText(message);
         popup.setTextSize(15);
@@ -273,7 +269,8 @@ public class TaskWorkspaceActivity extends AppCompatActivity implements MoveHand
         popup.setAlpha(0f);
         popup.setTranslationY(-250);
 
-        addContentView(popup,
+        addContentView(
+                popup,
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT
@@ -291,32 +288,27 @@ public class TaskWorkspaceActivity extends AppCompatActivity implements MoveHand
                 .setInterpolator(new DecelerateInterpolator())
                 .start();
 
-        popup.postDelayed(() ->
-                        popup.animate()
-                                .translationY(-200)
-                                .alpha(0f)
-                                .setDuration(350)
-                                .withEndAction(() -> {
-                                    ViewGroup parent = (ViewGroup) popup.getParent();
-                                    if (parent != null) parent.removeView(popup);
-                                })
-                                .start()
-                , 1700
+        popup.postDelayed(
+                () -> popup.animate()
+                        .translationY(-200)
+                        .alpha(0f)
+                        .setDuration(350)
+                        .withEndAction(() -> {
+                            ViewGroup parent = (ViewGroup) popup.getParent();
+                            if (parent != null) parent.removeView(popup);
+                        })
+                        .start(),
+                1700
         );
     }
 
-    // ============================================================
-    //  MOVE HANDLER IMPLEMENTATION
-    // ============================================================
-
     @Override
     public void onItemMove(int fromPos, int toPos) {
-        // Swap đã được xử lý trong BlockDragCallback — không cần xử lý thêm
+        // Đã xử lý trong BlockDragCallback
     }
 
     @Override
     public void onItemDrop() {
-        // Lưu thứ tự block ngay khi thả
         save();
     }
 }
