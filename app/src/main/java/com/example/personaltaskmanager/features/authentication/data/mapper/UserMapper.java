@@ -17,11 +17,13 @@ public class UserMapper {
     public static User toModel(UserEntity entity) {
         if (entity == null) return null;
 
+        // thêm id vào constructor
         return new User(
+                entity.id,
                 entity.username,
                 entity.email,
                 entity.password,
-                entity.role   // thêm
+                entity.role
         );
     }
 
@@ -34,7 +36,9 @@ public class UserMapper {
                 user.password
         );
 
-        e.role = user.role; // thêm
+        // truyền id ngược vào Entity
+        e.id = user.id;
+        e.role = user.role;
 
         return e;
     }

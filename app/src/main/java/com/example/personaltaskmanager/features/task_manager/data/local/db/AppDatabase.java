@@ -9,9 +9,12 @@ import androidx.room.RoomDatabase;
 import com.example.personaltaskmanager.features.task_manager.data.local.dao.TaskDao;
 import com.example.personaltaskmanager.features.task_manager.data.model.Task;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @Database(
         entities = {Task.class},
-        version = 4,              // ⬅⬅⬅ TĂNG VERSION để Room build lại DB
+        version = 5,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -19,6 +22,10 @@ public abstract class AppDatabase extends RoomDatabase {
     private static volatile AppDatabase INSTANCE;
 
     public abstract TaskDao taskDao();
+
+    /** Executor để chạy insert/update/delete ở background */
+    public static final ExecutorService databaseWriteExecutor =
+            Executors.newFixedThreadPool(4);
 
     public static AppDatabase getInstance(Context context) {
         if (INSTANCE == null) {
@@ -29,7 +36,7 @@ public abstract class AppDatabase extends RoomDatabase {
                                     AppDatabase.class,
                                     "task_manager_db"
                             )
-                            .fallbackToDestructiveMigration() // xoá DB khi thay đổi schema
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

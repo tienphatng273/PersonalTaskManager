@@ -20,6 +20,10 @@ import com.example.personaltaskmanager.features.task_manager.viewmodel.TaskViewM
 
 import java.util.Calendar;
 
+/**
+ * Fragment hiển thị & chỉnh sửa thông tin Task.
+ * Giữ nguyên toàn bộ logic cũ, chỉ bổ sung import TaskViewModel cho đúng.
+ */
 public class TaskInfoFragment extends Fragment {
 
     private static final String ARG_TASK_ID = "task_id";
@@ -31,6 +35,8 @@ public class TaskInfoFragment extends Fragment {
     private Button btnSave;
 
     private long selectedDeadline = System.currentTimeMillis();
+
+    // ViewModel chia sẻ với TaskWorkspaceActivity
     private TaskViewModel viewModel;
 
     public static TaskInfoFragment newInstance(int taskId) {
@@ -44,16 +50,20 @@ public class TaskInfoFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         taskId = getArguments().getInt(ARG_TASK_ID, -1);
+
+        // ViewModel dùng chung trong Activity chứa fragment
         viewModel = new ViewModelProvider(requireActivity()).get(TaskViewModel.class);
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
         View v = inflater.inflate(R.layout.feature_task_manager_fragment_task_info, container, false);
 
         edtTitle = v.findViewById(R.id.edt_task_title);
@@ -61,9 +71,10 @@ public class TaskInfoFragment extends Fragment {
         edtDate = v.findViewById(R.id.edt_task_date);
         btnSave = v.findViewById(R.id.btn_save_task);
 
-        // Nếu đang edit
+        // Nếu đang Edit task
         if (taskId != -1) {
             currentTask = viewModel.getTaskById(taskId);
+
             if (currentTask != null) {
                 edtTitle.setText(currentTask.getTitle());
                 edtDesc.setText(currentTask.getDescription());
@@ -75,10 +86,7 @@ public class TaskInfoFragment extends Fragment {
             }
         }
 
-        // Date picker
         edtDate.setOnClickListener(vx -> openDatePicker());
-
-        // Save
         btnSave.setOnClickListener(vx -> saveTask());
 
         return v;

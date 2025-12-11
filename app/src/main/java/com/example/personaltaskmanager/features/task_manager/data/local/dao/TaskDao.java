@@ -13,13 +13,13 @@ import java.util.List;
 
 /**
  * DAO xử lý CRUD với Room DB.
- * Giữ nguyên toàn bộ code cũ, chỉ bổ sung hàm getTasksByDate().
+ * Giữ nguyên toàn bộ code cũ, chỉ bổ sung userId vào query.
  */
 @Dao
 public interface TaskDao {
 
-    @Query("SELECT * FROM tasks ORDER BY id DESC")
-    LiveData<List<Task>> getAllTasks();
+    @Query("SELECT * FROM tasks WHERE userId = :userId ORDER BY id DESC")
+    LiveData<List<Task>> getAllTasks(int userId);
 
     @Query("SELECT * FROM tasks WHERE id = :taskId LIMIT 1")
     Task getTaskById(int taskId);
@@ -33,11 +33,9 @@ public interface TaskDao {
     @Delete
     void deleteTask(Task task);
 
-    // UPDATE Completed
     @Query("UPDATE tasks SET isCompleted = :done WHERE id = :taskId")
     void updateCompleted(int taskId, boolean done);
 
-    // lấy task theo ngày
-    @Query("SELECT * FROM tasks WHERE deadline BETWEEN :start AND :end ORDER BY deadline ASC")
-    LiveData<List<Task>> getTasksByDate(long start, long end);
+    @Query("SELECT * FROM tasks WHERE userId = :userId AND deadline BETWEEN :start AND :end ORDER BY deadline ASC")
+    LiveData<List<Task>> getTasksByDate(int userId, long start, long end);
 }

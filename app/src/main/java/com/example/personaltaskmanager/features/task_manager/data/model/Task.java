@@ -6,17 +6,7 @@ import androidx.room.Ignore;
 
 /**
  * Entity Task lưu trong Room Database.
- * Các trường:
- *  - id (int)
- *  - title (String)
- *  - description (String)
- *  - createdAt (long)
- *  - isCompleted (boolean)
- *  - deadline (long)
- *
- * Giai đoạn “dọn chỗ”:
- *  - bổ sung notesJson và tablesJson (dự phòng cho 2 feature mới)
- *  - chưa dùng tới nhưng cần trong DB để tránh sửa lớn sau này
+ * Giữ nguyên cấu trúc đang có, chỉ bổ sung userId để phân tách task theo từng user.
  */
 @Entity(tableName = "tasks")
 public class Task {
@@ -32,15 +22,20 @@ public class Task {
 
     public long deadline = 0L;
 
-    // Dành cho feature Quick Notes (JSON String)
     public String notesJson = "";
-
-    // Dành cho feature Tables (JSON String)
     public String tablesJson = "";
 
+    /** userId giúp tách dữ liệu theo từng account */
+    public int userId;
+
     // ==== CONSTRUCTOR CHÍNH CHO ROOM ====
-    public Task(String title, String description, long createdAt, long deadline,
-                String notesJson, String tablesJson) {
+    public Task(String title,
+                String description,
+                long createdAt,
+                long deadline,
+                String notesJson,
+                String tablesJson,
+                int userId) {
 
         this.title = title;
         this.description = description;
@@ -50,6 +45,7 @@ public class Task {
         this.notesJson = notesJson;
         this.tablesJson = tablesJson;
 
+        this.userId = userId;
         this.isCompleted = false;
     }
 
@@ -66,6 +62,7 @@ public class Task {
         this.notesJson = "";
         this.tablesJson = "";
 
+        this.userId = 0;
         this.isCompleted = false;
     }
 
@@ -78,13 +75,14 @@ public class Task {
     public long getDeadline() { return deadline; }
     public String getNotesJson() { return notesJson; }
     public String getTablesJson() { return tablesJson; }
+    public int getUserId() { return userId; }
 
     // ==== SETTER ====
     public void setTitle(String title) { this.title = title; }
     public void setDescription(String description) { this.description = description; }
     public void setCompleted(boolean completed) { this.isCompleted = completed; }
     public void setDeadline(long deadline) { this.deadline = deadline; }
-
     public void setNotesJson(String notesJson) { this.notesJson = notesJson; }
     public void setTablesJson(String tablesJson) { this.tablesJson = tablesJson; }
+    public void setUserId(int userId) { this.userId = userId; }
 }

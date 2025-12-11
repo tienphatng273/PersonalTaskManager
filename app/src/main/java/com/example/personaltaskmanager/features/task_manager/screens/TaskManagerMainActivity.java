@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.personaltaskmanager.R;
-import com.example.personaltaskmanager.features.task_manager.viewmodel.TaskViewModel;
 import com.example.personaltaskmanager.features.task_manager.data.model.Task;
+import com.example.personaltaskmanager.features.task_manager.viewmodel.TaskViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 /**

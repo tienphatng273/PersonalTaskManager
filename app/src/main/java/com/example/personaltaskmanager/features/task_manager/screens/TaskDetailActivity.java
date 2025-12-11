@@ -36,7 +36,6 @@ public class TaskDetailActivity extends AppCompatActivity {
     private int taskId = -1;
     private Task currentTask = null;
 
-    // Deadline timestamp
     private long selectedDeadline = System.currentTimeMillis();
 
     @Override
@@ -61,6 +60,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btn_back);
     }
 
+    /** Load dữ liệu nếu đang sửa task */
     private void loadTaskIfEditMode() {
         taskId = getIntent().getIntExtra("task_id", -1);
 
@@ -81,9 +81,7 @@ public class TaskDetailActivity extends AppCompatActivity {
 
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
-
         edtDate.setOnClickListener(v -> openDatePicker());
-
         btnSave.setOnClickListener(v -> saveTask());
     }
 
@@ -131,6 +129,7 @@ public class TaskDetailActivity extends AppCompatActivity {
         finish();
     }
 
+    /** Light status bar */
     private void setLightStatusBar() {
         Window window = getWindow();
         window.setStatusBarColor(Color.WHITE);

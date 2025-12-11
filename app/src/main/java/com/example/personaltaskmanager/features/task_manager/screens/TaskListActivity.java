@@ -22,8 +22,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
  * Màn hình danh sách Task.
  * Sử dụng ViewModel + LiveData → UI tự cập nhật khi DB thay đổi.
  *
- * ✔ Giữ nguyên toàn bộ cấu trúc cũ
- * ✔ Chỉ thay đổi: mở Workspace thay vì TaskDetailActivity
+ * Giữ nguyên toàn bộ cấu trúc cũ,
+ * chỉ thay đổi: mở TaskWorkspaceActivity thay vì TaskDetailActivity.
  */
 public class TaskListActivity extends AppCompatActivity {
 
@@ -41,16 +41,13 @@ public class TaskListActivity extends AppCompatActivity {
 
         setLightStatusBar();
 
-        // Ánh xạ View
         recyclerView = findViewById(R.id.rv_list_tasks);
         fabAdd = findViewById(R.id.fab_add_task);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Adapter hiển thị danh sách
         adapter = new TaskAdapter(
                 task -> {
-                    // ⭐⭐ CLICK → MỞ WORKSPACE ⭐⭐
                     Intent intent = new Intent(TaskListActivity.this, TaskWorkspaceActivity.class);
                     intent.putExtra("task_id", task.getId());
                     startActivity(intent);
@@ -61,22 +58,17 @@ public class TaskListActivity extends AppCompatActivity {
 
         recyclerView.setAdapter(adapter);
 
-        // ViewModel
         viewModel = new ViewModelProvider(this).get(TaskViewModel.class);
 
-        // Quan sát danh sách Task (LiveData)
         viewModel.getAllTasks().observe(this, tasks -> adapter.setData(tasks));
 
-        // ADD task → vẫn mở màn TaskDetailActivity cũ
         fabAdd.setOnClickListener(v -> {
             Intent intent = new Intent(this, TaskDetailActivity.class);
             startActivityForResult(intent, REQUEST_ADD_TASK);
         });
     }
 
-    /**
-     * Thiết lập status bar sáng (icon tối)
-     */
+    /** Light status bar */
     private void setLightStatusBar() {
         Window window = getWindow();
         window.setStatusBarColor(Color.WHITE);
